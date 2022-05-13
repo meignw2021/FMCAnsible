@@ -470,7 +470,7 @@ class BaseConfigurationResource(object):
         # some objects is 'ifname' as unique name
         data_name = data.get(NAME)
         model = self._conn.get_model_spec(model_name)
-        use_if_name = model and model.get('properties') is not None and model.get('properties').get(IF_NAME) is not None
+        use_if_name = model_has_property(model, IF_NAME)
         if use_if_name:
             raise Exception('use_if_name is true for some reason, use_if_name = %s' % str(use_if_name))
         # if not params.get(ParamName.FILTERS):
@@ -687,6 +687,12 @@ def _get_user_params(params):
     return params.get(ParamName.DATA) or {}, params.get(ParamName.QUERY_PARAMS) or {}, params.get(
         ParamName.PATH_PARAMS) or {}
 
+
+def model_has_property(model, prop_name):
+    """
+    Gets whether the model spec object contains the specified property name.
+    """
+    return model and type(model) == dict and model.get('properties') is not None and model.get('properties').get(prop_name) is not None
 
 def iterate_over_pageable_resource(resource_func, params):
     """
