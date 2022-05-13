@@ -449,6 +449,7 @@ class BaseConfigurationResource(object):
         def filter_on_name_or_whole_object(obj):
             # if model contains ifname, compare both objects on that
             if use_if_name:
+                raise Exception('use_if_name should be False') 
                 if obj.get(IF_NAME) is not None and data.get(IF_NAME) is not None:
                     return data.get(IF_NAME) == obj.get(IF_NAME)
                 else:
