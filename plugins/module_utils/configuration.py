@@ -469,6 +469,7 @@ class BaseConfigurationResource(object):
         # some objects is 'ifname' as unique name
         data_name = data.get(NAME)
         model = self._conn.get_model_spec(model_name)
+        print(model)
         use_if_name = model and model.get('properties') is not None and model.get('properties').get(IF_NAME) is not None
         # if not params.get(ParamName.FILTERS):
         #    params[ParamName.FILTERS] = {'name': data['name']}
