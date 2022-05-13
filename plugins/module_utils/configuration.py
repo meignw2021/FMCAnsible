@@ -472,7 +472,7 @@ class BaseConfigurationResource(object):
         model = self._conn.get_model_spec(model_name)
         use_if_name = model and model.get('properties') is not None and model.get('properties').get(IF_NAME) is not None
         if use_if_name:
-            raise Exception('use_if_name is true for some reason, model = %s' % str(model))
+            raise Exception('use_if_name is true for some reason, use_if_name = %s' % str(use_if_name))
         # if not params.get(ParamName.FILTERS):
         #    params[ParamName.FILTERS] = {'name': data['name']}
 
