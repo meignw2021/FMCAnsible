@@ -17,14 +17,14 @@ class TestFmcSwagger(unittest.TestCase):
         self.init_mock_data()
 
     def init_mock_data(self):
-        with open(os.path.join(TEST_DATA_FOLDER, 'ngfw_with_ex.json'), 'rb') as f:
+        with open(os.path.join(TEST_DATA_FOLDER, 'fmc_spec.json'), 'rb') as f:
             self.base_data = json.loads(f.read().decode('utf-8'))
 
     def test_with_all_data(self):
-        fdm_data = FmcSwaggerParser().parse_spec(self.base_data)
-        validator = FmcSwaggerValidator(fdm_data)
-        models = fdm_data['models']
-        operations = fdm_data['operations']
+        fmc_data = FmcSwaggerParser().parse_spec(self.base_data)
+        validator = FmcSwaggerValidator(fmc_data)
+        models = fmc_data['models']
+        operations = fmc_data['operations']
 
         invalid = set({})
         for operation in operations:
@@ -38,26 +38,11 @@ class TestFmcSwagger(unittest.TestCase):
                         assert valid
                     except Exception:
                         invalid.add(model_name)
-        assert invalid == set(['TCPPortObject',
-                               'UDPPortObject',
-                               'ICMPv4PortObject',
-                               'ICMPv6PortObject',
-                               'StandardAccessList',
-                               'ExtendedAccessList',
-                               'ASPathList',
-                               'RouteMap',
-                               'StandardCommunityList',
-                               'ExpandedCommunityList',
-                               'IPV4PrefixList',
-                               'IPV6PrefixList',
-                               'PolicyList',
-                               'SyslogServer',
-                               'HAConfiguration',
-                               'TestIdentitySource'])
+        assert invalid == set(['FTDManualNatRule'])
 
     def test_parse_all_data(self):
-        self.fdm_data = FmcSwaggerParser().parse_spec(self.base_data)
-        operations = self.fdm_data['operations']
+        fmc_data = FmcSwaggerParser().parse_spec(self.base_data)
+        operations = fmc_data['operations']
         without_model_name = []
         expected_operations_counter = 0
         for key in self.base_data['paths']:
@@ -70,10 +55,7 @@ class TestFmcSwagger(unittest.TestCase):
             if not operation['modelName']:
                 without_model_name.append(operation['url'])
 
-            if operation['modelName'] == '_File' and 'download' not in operation['url']:
-                self.fail('File type can be defined for download operation only')
-
-        assert sorted(['/api/fdm/v2/operational/deploy/{objId}', '/api/fdm/v2/action/upgrade']) == sorted(
-            without_model_name)
-        assert sorted(self.fdm_data['model_operations'][None].keys()) == sorted(['deleteDeployment', 'startUpgrade'])
+        assert ['/api/fmc_config/v1/domain/{domainUUID}/object/intrusionrulesupload'] == without_model_name
+        for key in fmc_data['model_operations'][None].keys():
+            assert key == 'createSnort3IPSRulesFileUpload' or key.startswith("deleteMultiple")
         assert expected_operations_counter == len(operations)

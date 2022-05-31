@@ -31,7 +31,7 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_FOLDER = os.path.join(DIR_PATH, 'test_data')
 
 base = {
-    'basePath': "/api/fdm/v2",
+    'basePath': "/api/fmc/v2",
     'definitions': {"NetworkObject": {"type": "object",
                                       "properties": {"version": {"type": "string"}, "name": {"type": "string"},
                                                      "description": {"type": "string"},
@@ -120,12 +120,12 @@ class TestFmcSwaggerParser(unittest.TestCase):
     def test_simple_object(self):
         self._data = copy.deepcopy(base)
 
-        self.fdm_data = FmcSwaggerParser().parse_spec(self._data)
+        fmc_data = FmcSwaggerParser().parse_spec(self._data)
 
         expected_operations = {
             'getNetworkObjectList': {
                 'method': HTTPMethod.GET,
-                'url': '/api/fdm/v2/object/networks',
+                'url': '/api/fmc/v2/object/networks',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {},
@@ -153,7 +153,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
             },
             'addNetworkObject': {
                 'method': HTTPMethod.POST,
-                'url': '/api/fdm/v2/object/networks',
+                'url': '/api/fmc/v2/object/networks',
                 'modelName': 'NetworkObject',
                 'parameters': {'path': {},
                                'query': {}},
@@ -162,7 +162,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
             },
             'getNetworkObject': {
                 'method': HTTPMethod.GET,
-                'url': '/api/fdm/v2/object/networks/{objId}',
+                'url': '/api/fmc/v2/object/networks/{objId}',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {
@@ -178,7 +178,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
             },
             'editNetworkObject': {
                 'method': HTTPMethod.PUT,
-                'url': '/api/fdm/v2/object/networks/{objId}',
+                'url': '/api/fmc/v2/object/networks/{objId}',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {
@@ -194,7 +194,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
             },
             'deleteNetworkObject': {
                 'method': HTTPMethod.DELETE,
-                'url': '/api/fdm/v2/object/networks/{objId}',
+                'url': '/api/fmc/v2/object/networks/{objId}',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {
@@ -209,9 +209,9 @@ class TestFmcSwaggerParser(unittest.TestCase):
                 "tags": ["NetworkObject"]
             }
         }
-        assert sorted(['NetworkObject', 'NetworkObjectWrapper']) == sorted(self.fdm_data['models'].keys())
-        assert expected_operations == self.fdm_data['operations']
-        assert {'NetworkObject': expected_operations} == self.fdm_data['model_operations']
+        assert sorted(['NetworkObject', 'NetworkObjectWrapper']) == sorted(fmc_data['models'].keys())
+        assert expected_operations == fmc_data['operations']
+        assert {'NetworkObject': expected_operations} == fmc_data['model_operations']
 
     def test_simple_object_with_documentation(self):
         api_spec = copy.deepcopy(base)
@@ -233,17 +233,17 @@ class TestFmcSwaggerParser(unittest.TestCase):
             }
         }
 
-        self.fdm_data = FmcSwaggerParser().parse_spec(api_spec, docs)
+        fmc_data = FmcSwaggerParser().parse_spec(api_spec, docs)
 
-        assert 'Description for Network Object' == self.fdm_data['models']['NetworkObject']['description']
-        assert '' == self.fdm_data['models']['NetworkObjectWrapper']['description']
-        network_properties = self.fdm_data['models']['NetworkObject']['properties']
+        assert 'Description for Network Object' == fmc_data['models']['NetworkObject']['description']
+        assert '' == fmc_data['models']['NetworkObjectWrapper']['description']
+        network_properties = fmc_data['models']['NetworkObject']['properties']
         assert '' == network_properties['id']['description']
         assert not network_properties['id']['required']
         assert 'Description for name field' == network_properties['name']['description']
         assert network_properties['name']['required']
 
-        ops = self.fdm_data['operations']
+        ops = fmc_data['operations']
         assert 'Description for getNetworkObjectList operation' == ops['getNetworkObjectList']['description']
         assert 'Description for addNetworkObject operation' == ops['addNetworkObject']['description']
         assert '' == ops['deleteNetworkObject']['description']
@@ -362,9 +362,9 @@ class TestFmcSwaggerParser(unittest.TestCase):
             }
         }
 
-        fdm_data = FmcSwaggerParser().parse_spec(data)
-        assert sorted(['Model1', 'Model2', 'Model3']) == sorted(fdm_data['models'].keys())
-        assert expected_operations == fdm_data['operations']
+        fmc_data = FmcSwaggerParser().parse_spec(data)
+        assert sorted(['Model1', 'Model2', 'Model3']) == sorted(fmc_data['models'].keys())
+        assert expected_operations == fmc_data['operations']
         assert {
             'Model1': {
                 'getSomeModelList': expected_operations['getSomeModelList'],
@@ -380,4 +380,4 @@ class TestFmcSwaggerParser(unittest.TestCase):
             None: {
                 'deleteNoneModel': expected_operations['deleteNoneModel']
             }
-        } == fdm_data['model_operations']
+        } == fmc_data['model_operations']
