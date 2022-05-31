@@ -33,41 +33,39 @@ TEST_DATA_FOLDER = os.path.join(DIR_PATH, 'test_data')
 base = {
     'basePath': "/api/fmc/v2",
     'definitions': {"NetworkObject": {"type": "object",
-                                      "properties": {"version": {"type": "string"}, "name": {"type": "string"},
+                                      "properties": {"version": {"type": "string"}, 
+                                                     "name": {"type": "string"},
                                                      "description": {"type": "string"},
-                                                     "subType": {"type": "object",
-                                                                 "$ref": "#/definitions/NetworkObjectType"},
                                                      "value": {"type": "string"},
-                                                     "isSystemDefined": {"type": "boolean"},
-                                                     "dnsResolution": {"type": "object",
-                                                                       "$ref": "#/definitions/FQDNDNSResolution"},
                                                      "id": {"type": "string"},
                                                      "type": {"type": "string", "default": "networkobject"}},
-                                      "required": ["subType", "type", "value", "name"]},
-                    "NetworkObjectWrapper": {
-                        "allOf": [{"$ref": "#/definitions/NetworkObject"}, {"$ref": "#/definitions/LinksWrapper"}]}
-                    },
+                                      "required": ["type", "value", "name"]}},
+    'parameters': {
+        "expanded": {"name": "expanded", "in": "query", "required": False, "type": "boolean"},
+        "offset": {"name": "offset", "in": "query", "required": False, "type": "integer"},
+        "limit": {"name": "expanded", "in": "query", "required": False, "type": "integer"},
+    },
     'paths': {
         "/object/networks": {
             "get": {"tags": ["NetworkObject"],
-                    "operationId": "getNetworkObjectList",
+                    "operationId": "getAllNetworkObject",
                     "responses": {
                         "200": {
                             "description": "",
                             "schema": {"type": "object",
-                                       "title": "NetworkObjectList",
+                                       "title": "NetworkObjectListContainer",
                                        "properties": {
                                            "items": {
                                                "type": "array",
-                                               "items": {"$ref": "#/definitions/NetworkObjectWrapper"}},
+                                               "items": {"$ref": "#/definitions/NetworkObject"}},
                                            "paging": {
-                                               "$ref": "#/definitions/Paging"}},
+                                               "$ref": "#/definitions/PagingContainer"}},
                                        "required": ["items", "paging"]}}},
                     "parameters": [
+                        {"name": "filter", "in": "query", "required": False, "type": "string"},
                         {"name": "offset", "in": "query", "required": False, "type": "integer"},
                         {"name": "limit", "in": "query", "required": False, "type": "integer"},
-                        {"name": "sort", "in": "query", "required": False, "type": "string"},
-                        {"name": "filter", "in": "query", "required": False, "type": "string"}]},
+                        {"name": "expanded", "in": "query", "required": False, "type": "string"}]},
             "post": {"tags": ["NetworkObject"], "operationId": "addNetworkObject",
                      "responses": {
                          "200": {"description": "",

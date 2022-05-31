@@ -17,7 +17,7 @@ class TestFmcSwagger(unittest.TestCase):
         self.init_mock_data()
 
     def init_mock_data(self):
-        with open(os.path.join(TEST_DATA_FOLDER, 'fmc_spec.json'), 'rb') as f:
+        with open(os.path.join(TEST_DATA_FOLDER, 'fmc_spec_with_ex.json'), 'rb') as f:
             self.base_data = json.loads(f.read().decode('utf-8'))
 
     def test_with_all_data(self):
