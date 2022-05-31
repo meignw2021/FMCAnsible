@@ -208,6 +208,8 @@ class TestFmcSwaggerParser(unittest.TestCase):
             }
         }
         assert sorted(['NetworkObject']) == sorted(fmc_data['models'].keys())
+        if len(expected_operations) > 0:
+            raise Exception('fmc_data[operations]', fmc_data['operations'])
         assert expected_operations == fmc_data['operations']
         assert {'NetworkObject': expected_operations} == fmc_data['model_operations']
 
@@ -366,6 +368,8 @@ class TestFmcSwaggerParser(unittest.TestCase):
 
         fmc_data = FmcSwaggerParser().parse_spec(data)
         assert sorted(['Model1', 'Model2', 'Model3']) == sorted(fmc_data['models'].keys())
+        if len(expected_operations) > 0:
+            raise Exception('fmc_data[operations]', fmc_data['operations'])
         assert expected_operations == fmc_data['operations']
         assert {
             'Model1': {
