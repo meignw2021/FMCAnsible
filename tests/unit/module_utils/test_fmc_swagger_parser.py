@@ -158,7 +158,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
             },
             'getNetworkObject': {
                 'method': HTTPMethod.GET,
-                'url': '/api/fmc/v2/object/networks/{objId}',
+                'url': '/object/networks/{objId}',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {
@@ -203,8 +203,6 @@ class TestFmcSwaggerParser(unittest.TestCase):
             }
         }
         assert sorted(['NetworkObject']) == sorted(fmc_data['models'].keys())
-        if expected_operations != fmc_data['operations']:
-            raise Exception('fmc_data[operations]', fmc_data['operations'])
         assert expected_operations == fmc_data['operations']
         assert {'NetworkObject': expected_operations} == fmc_data['model_operations']
 
@@ -357,8 +355,6 @@ class TestFmcSwaggerParser(unittest.TestCase):
 
         fmc_data = FmcSwaggerParser().parse_spec(data)
         assert sorted(['Model1', 'Model2', 'Model3']) == sorted(fmc_data['models'].keys())
-        if expected_operations != fmc_data['operations']:
-            raise Exception('fmc_data[operations]', fmc_data['operations'])
         assert expected_operations == fmc_data['operations']
         assert {
             'Model1': {
