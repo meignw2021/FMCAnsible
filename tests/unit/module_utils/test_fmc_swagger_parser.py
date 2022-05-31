@@ -33,7 +33,7 @@ TEST_DATA_FOLDER = os.path.join(DIR_PATH, 'test_data')
 base = {
     'basePath': "/api/fmc/v2",
     'definitions': {"NetworkObject": {"type": "object",
-                                      "properties": {"version": {"type": "string"}, 
+                                      "properties": {"version": {"type": "string"},
                                                      "name": {"type": "string"},
                                                      "description": {"type": "string"},
                                                      "value": {"type": "string"},
@@ -223,7 +223,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
             'paths': {
                 '/object/networks': {
                     'get': {
-                        'description': 'Description for getNetworkObjectList operation',
+                        'description': 'Description for getAllNetworkObject operation',
                         'parameters': [{'name': 'offset', 'description': 'Description for offset field'}]
                     },
                     'post': {'description': 'Description for addNetworkObject operation'}
@@ -241,11 +241,11 @@ class TestFmcSwaggerParser(unittest.TestCase):
         assert network_properties['name']['required']
 
         ops = fmc_data['operations']
-        assert 'Description for getNetworkObjectList operation' == ops['getNetworkObjectList']['description']
+        assert 'Description for getAllNetworkObject operation' == ops['getAllNetworkObject']['description']
         assert 'Description for addNetworkObject operation' == ops['addNetworkObject']['description']
         assert '' == ops['deleteNetworkObject']['description']
 
-        get_op_params = ops['getNetworkObjectList']['parameters']
+        get_op_params = ops['getAllNetworkObject']['parameters']
         assert 'Description for offset field' == get_op_params['query']['offset']['description']
         assert '' == get_op_params['query']['limit']['description']
 
