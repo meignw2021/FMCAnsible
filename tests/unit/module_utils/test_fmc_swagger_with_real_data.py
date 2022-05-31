@@ -55,10 +55,13 @@ class TestFmcSwagger(unittest.TestCase):
             if not operation['modelName']:
                 without_model_name.append(operation['url'])
 
-        if len(without_model_name) != 1:
-            raise Exception('without_model_name', without_model_name)
-        assert len(without_model_name) == 1
-        assert ['/api/fmc_config/v1/domain/{domainUUID}/object/intrusionrulesupload'] == without_model_name
+        assert sorted(['/api/fmc_config/v1/domain/{domainUUID}/object/intrusionrules', 
+                '/api/fmc_config/v1/domain/{domainUUID}/object/dynamicobjectmappings', 
+                '/api/fmc_config/v1/domain/{domainUUID}/policy/prefilterpolicies/{containerUUID}/prefilterrules', 
+                '/api/fmc_config/v1/domain/{domainUUID}/object/intrusionrulesupload', 
+                '/api/fmc_config/v1/domain/{domainUUID}/policy/accesspolicies/{containerUUID}/accessrules', 
+                '/api/fmc_config/v1/domain/{domainUUID}/object/dynamicobjects/{objectId}/mappings', 
+                '/api/fmc_config/v1/domain/{domainUUID}/object/dynamicobjects']) == sorted(without_model_name)
         for key in fmc_data['model_operations'][None].keys():
             assert key == 'createSnort3IPSRulesFileUpload' or key.startswith("deleteMultiple")
         assert expected_operations_counter == len(operations)

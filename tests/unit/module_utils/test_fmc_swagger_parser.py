@@ -123,7 +123,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
         expected_operations = {
             'getAllNetworkObject': {
                 'method': HTTPMethod.GET,
-                'url': '/api/fmc/v2/object/networks',
+                'url': '/object/networks',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {},
@@ -136,7 +136,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
                             'required': False,
                             'type': 'integer'
                         },
-                        'sort': {
+                        'expanded': {
                             'required': False,
                             'type': 'string'
                         },
@@ -146,17 +146,15 @@ class TestFmcSwaggerParser(unittest.TestCase):
                         }
                     }
                 },
-                'returnMultipleItems': True,
-                "tags": ["NetworkObject"]
+                'returnMultipleItems': True
             },
             'addNetworkObject': {
                 'method': HTTPMethod.POST,
-                'url': '/api/fmc/v2/object/networks',
+                'url': '/object/networks',
                 'modelName': 'NetworkObject',
                 'parameters': {'path': {},
                                'query': {}},
-                'returnMultipleItems': False,
-                "tags": ["NetworkObject"]
+                'returnMultipleItems': False
             },
             'getNetworkObject': {
                 'method': HTTPMethod.GET,
@@ -171,12 +169,11 @@ class TestFmcSwaggerParser(unittest.TestCase):
                     },
                     'query': {}
                 },
-                'returnMultipleItems': False,
-                "tags": ["NetworkObject"]
+                'returnMultipleItems': False
             },
             'editNetworkObject': {
                 'method': HTTPMethod.PUT,
-                'url': '/api/fmc/v2/object/networks/{objId}',
+                'url': '/object/networks/{objId}',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {
@@ -187,12 +184,11 @@ class TestFmcSwaggerParser(unittest.TestCase):
                     },
                     'query': {}
                 },
-                'returnMultipleItems': False,
-                "tags": ["NetworkObject"]
+                'returnMultipleItems': False
             },
             'deleteNetworkObject': {
                 'method': HTTPMethod.DELETE,
-                'url': '/api/fmc/v2/object/networks/{objId}',
+                'url': '/object/networks/{objId}',
                 'modelName': 'NetworkObject',
                 'parameters': {
                     'path': {
@@ -203,12 +199,11 @@ class TestFmcSwaggerParser(unittest.TestCase):
                     },
                     'query': {}
                 },
-                'returnMultipleItems': False,
-                "tags": ["NetworkObject"]
+                'returnMultipleItems': False
             }
         }
         assert sorted(['NetworkObject']) == sorted(fmc_data['models'].keys())
-        if len(expected_operations) > 0:
+        if expected_operations != fmc_data['operations']:
             raise Exception('fmc_data[operations]', fmc_data['operations'])
         assert expected_operations == fmc_data['operations']
         assert {'NetworkObject': expected_operations} == fmc_data['model_operations']
@@ -316,59 +311,53 @@ class TestFmcSwaggerParser(unittest.TestCase):
         expected_operations = {
             'getSomeModelList': {
                 'method': HTTPMethod.GET,
-                'url': '/v2/path1',
+                'url': 'path1',
                 'modelName': 'Model1',
-                'returnMultipleItems': True,
-                'tags': []
+                'returnMultipleItems': True
             },
             'addSomeModel': {
                 'method': HTTPMethod.POST,
-                'url': '/v2/path1',
+                'url': 'path1',
                 'modelName': 'Model2',
                 'parameters': {
                     'path': {},
                     'query': {}
                 },
-                'returnMultipleItems': False,
-                'tags': []
+                'returnMultipleItems': False
             },
             'getSomeModel': {
                 'method': HTTPMethod.GET,
-                'url': '/v2/path2/{id}',
+                'url': 'path2/{id}',
                 'modelName': 'Model3',
-                'returnMultipleItems': False,
-                'tags': []
+                'returnMultipleItems': False
             },
             'editSomeModel': {
                 'method': HTTPMethod.PUT,
-                'url': '/v2/path2/{id}',
+                'url': 'path2/{id}',
                 'modelName': 'Model1',
                 'parameters': {
                     'path': {},
                     'query': {}
                 },
-                'returnMultipleItems': False,
-                'tags': []
+                'returnMultipleItems': False
             },
             'deleteModel3': {
                 'method': HTTPMethod.DELETE,
-                'url': '/v2/path2/{id}',
+                'url': 'path2/{id}',
                 'modelName': 'Model3',
-                'returnMultipleItems': False,
-                'tags': []
+                'returnMultipleItems': False
             },
             'deleteNoneModel': {
                 'method': HTTPMethod.DELETE,
-                'url': '/v2/path3',
+                'url': 'path3',
                 'modelName': None,
-                'returnMultipleItems': False,
-                'tags': []
+                'returnMultipleItems': False
             }
         }
 
         fmc_data = FmcSwaggerParser().parse_spec(data)
         assert sorted(['Model1', 'Model2', 'Model3']) == sorted(fmc_data['models'].keys())
-        if len(expected_operations) > 0:
+        if expected_operations != fmc_data['operations']:
             raise Exception('fmc_data[operations]', fmc_data['operations'])
         assert expected_operations == fmc_data['operations']
         assert {
