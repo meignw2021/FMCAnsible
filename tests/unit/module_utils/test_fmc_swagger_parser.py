@@ -70,7 +70,7 @@ base = {
                      "responses": {
                          "200": {"description": "",
                                  "schema": {"type": "object",
-                                            "$ref": "#/definitions/NetworkObjectWrapper"}},
+                                            "$ref": "#/definitions/NetworkObject"}},
                          "422": {"description": "",
                                  "schema": {"type": "object", "$ref": "#/definitions/ErrorWrapper"}}},
                      "parameters": [{"in": "body", "name": "body",
@@ -81,7 +81,7 @@ base = {
             "get": {"tags": ["NetworkObject"], "operationId": "getNetworkObject",
                     "responses": {"200": {"description": "",
                                           "schema": {"type": "object",
-                                                     "$ref": "#/definitions/NetworkObjectWrapper"}},
+                                                     "$ref": "#/definitions/NetworkObject"}},
                                   "404": {"description": "",
                                           "schema": {"type": "object",
                                                      "$ref": "#/definitions/ErrorWrapper"}}},
@@ -91,7 +91,7 @@ base = {
             "put": {"tags": ["NetworkObject"], "operationId": "editNetworkObject",
                     "responses": {"200": {"description": "",
                                           "schema": {"type": "object",
-                                                     "$ref": "#/definitions/NetworkObjectWrapper"}},
+                                                     "$ref": "#/definitions/NetworkObject"}},
                                   "422": {"description": "",
                                           "schema": {"type": "object",
                                                      "$ref": "#/definitions/ErrorWrapper"}}},
@@ -121,7 +121,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
         fmc_data = FmcSwaggerParser().parse_spec(self._data)
 
         expected_operations = {
-            'getNetworkObjectList': {
+            'getAllNetworkObject': {
                 'method': HTTPMethod.GET,
                 'url': '/api/fmc/v2/object/networks',
                 'modelName': 'NetworkObject',
@@ -207,7 +207,7 @@ class TestFmcSwaggerParser(unittest.TestCase):
                 "tags": ["NetworkObject"]
             }
         }
-        assert sorted(['NetworkObject', 'NetworkObjectWrapper']) == sorted(fmc_data['models'].keys())
+        assert sorted(['NetworkObject']) == sorted(fmc_data['models'].keys())
         assert expected_operations == fmc_data['operations']
         assert {'NetworkObject': expected_operations} == fmc_data['model_operations']
 
@@ -234,7 +234,6 @@ class TestFmcSwaggerParser(unittest.TestCase):
         fmc_data = FmcSwaggerParser().parse_spec(api_spec, docs)
 
         assert 'Description for Network Object' == fmc_data['models']['NetworkObject']['description']
-        assert '' == fmc_data['models']['NetworkObjectWrapper']['description']
         network_properties = fmc_data['models']['NetworkObject']['properties']
         assert '' == network_properties['id']['description']
         assert not network_properties['id']['required']
@@ -257,6 +256,11 @@ class TestFmcSwaggerParser(unittest.TestCase):
                 'Model1': {"type": "object"},
                 'Model2': {"type": "object"},
                 'Model3': {"type": "object"}
+            },
+            'parameters': {
+                "expanded": {"name": "expanded", "in": "query", "required": False, "type": "boolean"},
+                "offset": {"name": "offset", "in": "query", "required": False, "type": "integer"},
+                "limit": {"name": "expanded", "in": "query", "required": False, "type": "integer"},
             },
             'paths': {
                 'path1': {
