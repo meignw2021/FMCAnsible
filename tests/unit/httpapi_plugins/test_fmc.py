@@ -70,7 +70,7 @@ class TestFmcHttpApi(unittest.TestCase):
         self.fmc_plugin._load_name = 'httpapi'
 
     def test_login_should_request_tokens_when_no_refresh_token(self):
-        self.connection_mock.send.return_value = self._connection_response(
+        self.connection_mock.send.return_value = self._login_response(
             {'access_token': 'ACCESS_TOKEN', 'refresh_token': 'REFRESH_TOKEN'}
         )
 
@@ -78,28 +78,28 @@ class TestFmcHttpApi(unittest.TestCase):
 
         assert 'ACCESS_TOKEN' == self.fmc_plugin.access_token
         assert 'REFRESH_TOKEN' == self.fmc_plugin.refresh_token
-        assert {'Authorization': 'Bearer ACCESS_TOKEN'} == self.fmc_plugin.connection._auth
+        # no longer supported in plugin, keeping for historical purposes:
+        # assert {'Authorization': 'Bearer ACCESS_TOKEN'} == self.fmc_plugin.connection._auth
         expected_body = json.dumps({'grant_type': 'password', 'username': 'foo', 'password': 'bar'})
         self.connection_mock.send.assert_called_once_with(mock.ANY, expected_body, headers=mock.ANY, method=mock.ANY)
 
     def test_login_should_update_tokens_when_refresh_token_exists(self):
         self.fmc_plugin.refresh_token = 'REFRESH_TOKEN'
-        self.connection_mock.send.return_value = self._connection_response(
-            {'access_token': 'NEW_ACCESS_TOKEN', 'refresh_token': 'NEW_REFRESH_TOKEN'}
+        self.connection_mock.send.return_value = self._login_response(
+            {'X-auth-access-token': 'NEW_ACCESS_TOKEN', 'refresh_token': 'NEW_REFRESH_TOKEN'}
         )
 
         self.fmc_plugin.login('foo', 'bar')
 
         assert 'NEW_ACCESS_TOKEN' == self.fmc_plugin.access_token
         assert 'NEW_REFRESH_TOKEN' == self.fmc_plugin.refresh_token
-        assert {'Authorization': 'Bearer NEW_ACCESS_TOKEN'} == self.fmc_plugin.connection._auth
         expected_body = json.dumps({'grant_type': 'refresh_token', 'refresh_token': 'REFRESH_TOKEN'})
         self.connection_mock.send.assert_called_once_with(mock.ANY, expected_body, headers=mock.ANY, method=mock.ANY)
 
     def test_login_should_use_env_variable_when_set(self):
         temp_token_path = self.fmc_plugin.hostvars['token_path']
         self.fmc_plugin.hostvars['token_path'] = '/testFakeLoginUrl'
-        self.connection_mock.send.return_value = self._connection_response(
+        self.connection_mock.send.return_value = self._login_response(
             {'access_token': 'ACCESS_TOKEN', 'refresh_token': 'REFRESH_TOKEN'}
         )
 
@@ -115,7 +115,7 @@ class TestFmcHttpApi(unittest.TestCase):
         assert 'Username and password are required' in str(res.exception)
 
     def test_login_raises_exception_when_invalid_response(self):
-        self.connection_mock.send.return_value = self._connection_response(
+        self.connection_mock.send.return_value = self._login_response(
             {'no_access_token': 'ACCESS_TOKEN'}
         )
 
@@ -136,7 +136,7 @@ class TestFmcHttpApi(unittest.TestCase):
     def test_logout_should_revoke_tokens(self):
         self.fmc_plugin.access_token = 'ACCESS_TOKEN_TO_REVOKE'
         self.fmc_plugin.refresh_token = 'REFRESH_TOKEN_TO_REVOKE'
-        self.connection_mock.send.return_value = self._connection_response(None)
+        self.connection_mock.send.return_value = self._login_response(None)
 
         self.fmc_plugin.logout()
 
@@ -189,13 +189,13 @@ class TestFmcHttpApi(unittest.TestCase):
         assert resp[ResponseParams.STATUS_CODE] == 500
 
         with self.assertRaises(ConnectionError) as res:
-           self.fmc_plugin.send_request('/test', HTTPMethod.GET)
+            self.fmc_plugin.send_request('/test', HTTPMethod.GET)
 
         assert 'Invalid JSON response' in str(res.exception)
 
     def test_handle_httperror_should_update_tokens_and_retry_on_auth_errors(self):
         self.fmc_plugin.refresh_token = 'REFRESH_TOKEN'
-        self.connection_mock.send.return_value = self._connection_response(
+        self.connection_mock.send.return_value = self._login_response(
             {'access_token': 'NEW_ACCESS_TOKEN', 'refresh_token': 'NEW_REFRESH_TOKEN'}
         )
 
@@ -327,14 +327,6 @@ class TestFmcHttpApi(unittest.TestCase):
 
         assert self.fmc_plugin.get_operation_specs_by_model_name('nonExistingOperation') is None
 
-    @staticmethod
-    def _connection_response(response, status=200):
-        response_mock = mock.Mock()
-        response_mock.getcode.return_value = status
-        response_text = json.dumps(response) if type(response) is dict else response
-        response_data = BytesIO(response_text.encode() if response_text else ''.encode())
-        return response_mock, response_data
-
     def test_get_list_of_supported_api_versions_with_failed_http_request(self):
         error_msg = "Invalid Credentials"
         fp = mock.MagicMock()
@@ -427,3 +419,34 @@ class TestFmcHttpApi(unittest.TestCase):
         url = mock.MagicMock()
         self.fmc_plugin._set_api_token_path(url)
         assert self.fmc_plugin._get_api_token_path() == url
+
+    # helpers
+    @staticmethod
+    def _connection_response(response, status=200):
+        response_mock = mock.Mock()
+        response_mock.getcode.return_value = status
+        response_text = json.dumps(response) if type(response) is dict else response
+        response_data = BytesIO(response_text.encode() if response_text else ''.encode())
+        return response_mock, response_data
+
+    @staticmethod
+    def _login_response(response_headers, status=200):
+        response_mock = mock.Mock()
+        response_mock.getcode.return_value = status
+        base_headers = {
+            'X-auth-access-token': None,
+            'X-auth-refresh-token': None,
+            'global': 'e276abec-e0f2-11e3-8169-6d9ed49b625f',
+            'DOMAINS': [{"uuid":"e276abec-e0f2-11e3-8169-6d9ed49b625f","name":"Global"}]
+        }
+        if type(response_headers) is dict:
+            headers_dict = base_headers.copy()
+            # rename tokens if needed
+            headers_dict['X-auth-access-token'] = response_headers.get('X-auth-access-token') or response_headers.get('access_token') or headers_dict['X-auth-access-token']
+            headers_dict['X-auth-refresh-token'] = response_headers.get('X-auth-refresh-token') or response_headers.get('refresh_token') or headers_dict['X-auth-refresh-token']
+        else:
+            headers_dict = response_headers
+        # if they don't pass a dict for headers, let it through and let the errors happen
+        response_mock.info.return_value = headers_dict
+        response_data = BytesIO(''.encode())
+        return response_mock, response_data
