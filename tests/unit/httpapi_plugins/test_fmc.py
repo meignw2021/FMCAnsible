@@ -188,11 +188,6 @@ class TestFmcHttpApi(unittest.TestCase):
         assert not resp[ResponseParams.SUCCESS]
         assert resp[ResponseParams.STATUS_CODE] == 500
 
-        with self.assertRaises(ConnectionError) as res:
-            self.fmc_plugin.send_request('/test', HTTPMethod.GET)
-
-        assert 'Invalid JSON response' in str(res.exception)
-
     def test_handle_httperror_should_update_tokens_and_retry_on_auth_errors(self):
         self.fmc_plugin.refresh_token = 'REFRESH_TOKEN'
         self.connection_mock.send.return_value = self._login_response(
@@ -327,29 +322,6 @@ class TestFmcHttpApi(unittest.TestCase):
 
         assert self.fmc_plugin.get_operation_specs_by_model_name('nonExistingOperation') is None
 
-    def test_get_list_of_supported_api_versions_with_failed_http_request(self):
-        error_msg = "Invalid Credentials"
-        fp = mock.MagicMock()
-        fp.read.return_value = '{{"error-msg": "{0}"}}'.format(error_msg)
-        send_mock = mock.MagicMock(side_effect=HTTPError('url', 400, 'msg', 'hdrs', fp))
-        with mock.patch.object(self.fmc_plugin.connection, 'send', send_mock):
-            with self.assertRaises(ConnectionError) as res:
-                self.fmc_plugin._get_supported_api_versions()
-
-        assert error_msg in str(res.exception)
-
-    def test_get_list_of_supported_api_versions_with_buggy_response(self):
-        error_msg = "Non JSON value"
-        http_response_mock = mock.MagicMock()
-        http_response_mock.getvalue.return_value = error_msg
-
-        send_mock = mock.MagicMock(return_value=(None, http_response_mock))
-
-        with mock.patch.object(self.fmc_plugin.connection, 'send', send_mock):
-            with self.assertRaises(ConnectionError) as res:
-                self.fmc_plugin._get_supported_api_versions()
-        assert error_msg in str(res.exception)
-
     def test_get_list_of_supported_api_versions_with_positive_response(self):
         http_response_mock = mock.MagicMock()
         http_response_mock.getvalue.return_value = '{"supportedVersions": ["v1"]}'
@@ -357,7 +329,7 @@ class TestFmcHttpApi(unittest.TestCase):
         send_mock = mock.MagicMock(return_value=(None, http_response_mock))
         with mock.patch.object(self.fmc_plugin.connection, 'send', send_mock):
             supported_versions = self.fmc_plugin._get_supported_api_versions()
-            assert supported_versions == ['v1']
+            assert supported_versions == 'v1'
 
     @patch('ansible_collections.cisco.fmcansible.plugins.httpapi.fmc.HttpApi._get_api_token_path', mock.MagicMock(return_value=None))
     @patch('ansible_collections.cisco.fmcansible.plugins.httpapi.fmc.HttpApi._get_known_token_paths')
@@ -437,13 +409,15 @@ class TestFmcHttpApi(unittest.TestCase):
             'X-auth-access-token': None,
             'X-auth-refresh-token': None,
             'global': 'e276abec-e0f2-11e3-8169-6d9ed49b625f',
-            'DOMAINS': [{"uuid":"e276abec-e0f2-11e3-8169-6d9ed49b625f","name":"Global"}]
+            'DOMAINS': '[{"uuid": "e276abec-e0f2-11e3-8169-6d9ed49b625f", "name":"Global"}]'
         }
         if type(response_headers) is dict:
             headers_dict = base_headers.copy()
             # rename tokens if needed
-            headers_dict['X-auth-access-token'] = response_headers.get('X-auth-access-token') or response_headers.get('access_token') or headers_dict['X-auth-access-token']
-            headers_dict['X-auth-refresh-token'] = response_headers.get('X-auth-refresh-token') or response_headers.get('refresh_token') or headers_dict['X-auth-refresh-token']
+            headers_dict['X-auth-access-token'] = response_headers.get('X-auth-access-token') or response_headers.get('access_token') \
+                or headers_dict['X-auth-access-token']
+            headers_dict['X-auth-refresh-token'] = response_headers.get('X-auth-refresh-token') or response_headers.get('refresh_token') \
+                or headers_dict['X-auth-refresh-token']
         else:
             headers_dict = response_headers
         # if they don't pass a dict for headers, let it through and let the errors happen
