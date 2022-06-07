@@ -116,7 +116,8 @@ class TestFmcHttpApi(unittest.TestCase):
 
     def test_login_raises_exception_when_invalid_response(self):
         self.connection_mock.send.return_value = self._login_response(
-            {'no_access_token': 'ACCESS_TOKEN'}
+            {'no_access_token': 'ACCESS_TOKEN'},
+            apply_base_headers=False
         )
 
         with self.assertRaises(ConnectionError) as res:
@@ -402,7 +403,7 @@ class TestFmcHttpApi(unittest.TestCase):
         return response_mock, response_data
 
     @staticmethod
-    def _login_response(response_headers, status=200):
+    def _login_response(response_headers, status=200, apply_base_headers=True):
         response_mock = mock.Mock()
         response_mock.getcode.return_value = status
         base_headers = {
@@ -411,7 +412,7 @@ class TestFmcHttpApi(unittest.TestCase):
             'global': 'e276abec-e0f2-11e3-8169-6d9ed49b625f',
             'DOMAINS': '[{"uuid": "e276abec-e0f2-11e3-8169-6d9ed49b625f", "name":"Global"}]'
         }
-        if type(response_headers) is dict:
+        if apply_base_headers and type(response_headers) is dict:
             headers_dict = base_headers.copy()
             # rename tokens if needed
             headers_dict['X-auth-access-token'] = response_headers.get('X-auth-access-token') or response_headers.get('access_token') \
